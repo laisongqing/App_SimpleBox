@@ -1,0 +1,27 @@
+# Use a small Ubuntu image as the base
+FROM ubuntu:latest
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+  openssh-server \
+  ca-certificates \
+  dos2unix \
+  && rm -rf /var/lib/apt/lists/*
+
+# Copy the boxInitialize.sh script to the root home directory in the container
+COPY boxInitialize.sh /root/
+
+# Give execute permissions to the boxInitialize.sh script
+RUN chmod +x /root/boxInitialize.sh
+
+# Run the boxInitialize.sh script to set up the Ubuntu environment
+RUN /root/boxInitialize.sh
+
+# Expose port 22 for SSH
+EXPOSE 22
+
+# Create directory for privilege separation
+RUN mkdir /run/sshd
+
+# Start the SSH service when the container starts
+# RUN ls -l /usr/sbin/sshd
+CMD ["/usr/sbin/sshd", "-D"]
